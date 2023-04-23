@@ -14,11 +14,13 @@ struct ContentView: View {
     @State private var colorBlue = Double.random(in: 0...255)
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 50) {
             ColorView(colorRed: $colorRed, colorGreen: $colorGreen, colorBlue: $colorBlue)
-            ColorSliderView(value: $colorRed, sliderColor: .red)
-            ColorSliderView(value: $colorGreen, sliderColor: .green)
-            ColorSliderView(value: $colorBlue, sliderColor: .blue)
+            VStack {
+                ColorSliderView(value: $colorRed, sliderColor: .red)
+                ColorSliderView(value: $colorGreen, sliderColor: .green)
+                ColorSliderView(value: $colorBlue, sliderColor: .blue)
+            }
             Spacer()
         }
         .padding()
@@ -54,19 +56,43 @@ struct ColorView: View {
 }
 
 struct ColorSliderView: View {
+    
     @Binding var value: Double
+    @FocusState var isInputActive: Bool
+    
     let sliderColor: Color
     
     var body: some View {
         HStack(spacing: 16) {
             Text("\(lround(value))")
                 .frame(width: 33)
+            
             Slider(value: $value, in: 1...255, step: 1)
                 .accentColor(sliderColor)
+            
             TextField("", value: $value, formatter:  NumberFormatter())
+                .onChange(of: value, perform: { newValue in
+                    if value > 255 {
+                        value = 255
+                    } else if value < 1 {
+                        value = 1
+                    }
+                })
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 45)
                 .keyboardType(.numberPad)
+                .focused($isInputActive)
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        if isInputActive {
+                        Spacer()
+                            Button("Done") {
+                                isInputActive = false
+                            }
+                        }
+                    }
+                }
         }
     }
 }
+
